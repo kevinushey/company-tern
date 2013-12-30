@@ -31,6 +31,23 @@
 (defvar company-tern-delay 0.5
   "Delay waiting for results from tern.")
 
+(defun company-tern-candidates ()
+  "Retrieve completion candidates from tern."
+  (setq tern-last-point-pos (point))
+  (let ((candidates-list 'trash-value))
+    (tern-run-query
+     (lambda (data)
+       (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
+             (start (+ 1 (cdr (assq 'start data))))
+             (end (+ 1 (cdr (assq 'end data)))))
+         (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
+         (setq candidates-list cs)))
+     "completions"
+     (point))
+    (while (eq candidates-list 'trash-value)
+      (sleep-for company-tern-delay))
+    candidates-list))
+
 ;;;###autoload
 (defun company-tern (command &optional arg)
   "Tern backend for company-mode.
@@ -40,17 +57,14 @@ See `company-backends' for more info about COMMAND and ARG."
   (case command
     (interactive (company-begin-backend 'company-tern))
     (prefix (and tern-mode (company-grab-symbol)))
-    (candidates (let (candidates-list)
-                  (tern-run-query (lambda (data)
-                                    (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
-                                          (start (+ 1 (cdr (assq 'start data))))
-                                          (end (+ 1 (cdr (assq 'end data)))))
-                                      (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
-                                      (setq candidates-list cs)))
-                                  "completions"
-                                  (point))
-                  (sleep-for company-tern-delay)
-                  candidates-list))))
+    (candidates (company-tern-candidates))))
+
+;;;###autoload
+(defun company-tern-complete-on-dot ()
+  "Call `company-tern' after dot insertion."
+  (interactive)
+  (insert ".")
+  (company-tern 'interactive))
 
 (provide 'company-tern)
 
