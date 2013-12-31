@@ -28,7 +28,7 @@
 (require 'tern)
 (eval-when-compile (require 'cl))
 
-(defvar company-tern-delay 0.5
+(defvar company-tern-delay 0.1
   "Delay waiting for results from tern.")
 
 (defun company-tern-candidates ()
