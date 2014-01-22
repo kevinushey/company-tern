@@ -28,8 +28,26 @@
 (require 'tern)
 (eval-when-compile (require 'cl))
 
+(defvar company-tern-complete-on-dot t
+  "If not nil, invoke tern completion after dot inserting.")
+
 (defvar company-tern-delay 0.1
   "Delay waiting for results from tern.")
+
+(defun company-tern-prefix ()
+  "Grab prefix at point.
+
+Properly detect strings, comments and attribute access."
+  (when (not (company-in-string-or-comment))
+    (let ((symbol (company-grab-symbol)))
+      (if symbol
+          (if (and company-tern-complete-on-dot
+                   (save-excursion
+                     (forward-char (- (length symbol)))
+                     (looking-back "\\." (- (point) 1))))
+              (cons symbol t)
+            symbol)
+        'stop))))
 
 (defun company-tern-candidates ()
   "Retrieve completion candidates from tern."
@@ -56,15 +74,8 @@ See `company-backends' for more info about COMMAND and ARG."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-tern))
-    (prefix (and tern-mode (company-grab-symbol)))
+    (prefix (and tern-mode (company-tern-prefix)))
     (candidates (company-tern-candidates))))
-
-;;;###autoload
-(defun company-tern-complete-on-dot ()
-  "Call `company-tern' after dot insertion."
-  (interactive)
-  (insert ".")
-  (company-tern 'interactive))
 
 (provide 'company-tern)
 
