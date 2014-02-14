@@ -31,9 +31,6 @@
 (defvar company-tern-complete-on-dot t
   "If not nil, invoke tern completion after dot inserting.")
 
-(defvar company-tern-delay 0.1
-  "Delay waiting for results from tern.")
-
 (defun company-tern-prefix ()
   "Grab prefix at point.
 
@@ -49,22 +46,49 @@ Properly detect strings, comments and attribute access."
             symbol)
         'stop))))
 
-(defun company-tern-candidates ()
-  "Retrieve completion candidates from tern."
+(defvar company-tern-candidates-cache nil
+  "Local cache stored last completions from company candidates.")
+
+(defvar company-tern-modified-tick nil
+  "Last buffer chars modified tick used for company-tern completions.")
+
+(defvar company-tern-last-prefix nil
+  "Last prefix used for company-tern completions.")
+
+(defun company-tern-candidates-p (prefix)
+  "Check if tern cache was properly populated with PREFIX."
+  (and (eq tern-last-point-pos (point))
+       (eq company-tern-modified-tick (buffer-chars-modified-tick))
+       (eq company-tern-last-prefix prefix)))
+
+(defun company-tern-candidates-query (prefix)
+  "Retrieve PREFIX completion candidates from tern."
   (setq tern-last-point-pos (point))
-  (let ((candidates-list 'trash-value))
-    (tern-run-query
-     (lambda (data)
-       (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
-             (start (+ 1 (cdr (assq 'start data))))
-             (end (+ 1 (cdr (assq 'end data)))))
-         (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
-         (setq candidates-list cs)))
-     "completions"
-     (point))
-    (while (eq candidates-list 'trash-value)
-      (sleep-for company-tern-delay))
-    candidates-list))
+  (setq company-tern-modified-tick (buffer-chars-modified-tick))
+  (setq company-tern-last-prefix prefix)
+  ;; Do tern call.
+  (tern-run-query
+   (lambda (data)
+     (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
+           (start (+ 1 (cdr (assq 'start data))))
+           (end (+ 1 (cdr (assq 'end data)))))
+       (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
+       (setq company-tern-candidates-cache cs)
+       ;; Restart company completion.
+       (unless company-candidates
+         (company-pre-command)
+         (company-auto-begin)
+         (company-post-command))))
+   "completions"
+   (point))
+  ;; Skip company-tern at that time.
+  nil)
+
+(defun company-tern-candidates (prefix)
+  "Start asynchronous tern completion with PREFIX."
+  (if (company-tern-candidates-p prefix)
+      company-tern-candidates-cache
+    (company-tern-candidates-query prefix)))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
@@ -75,7 +99,7 @@ See `company-backends' for more info about COMMAND and ARG."
   (case command
     (interactive (company-begin-backend 'company-tern))
     (prefix (and tern-mode (company-tern-prefix)))
-    (candidates (company-tern-candidates))))
+    (candidates (company-tern-candidates arg))))
 
 (provide 'company-tern)
 
