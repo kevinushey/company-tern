@@ -55,10 +55,14 @@ Properly detect strings, comments and attribute access."
 (defvar company-tern-last-prefix nil
   "Last prefix used for company-tern completions.")
 
+(defvar company-tern-last-buffer nil
+  "Last buffer in witch company-tern was called.")
+
 (defun company-tern-candidates-p (prefix)
   "Check if tern cache was properly populated with PREFIX."
   (and (eq tern-last-point-pos (point))
        (eq company-tern-modified-tick (buffer-chars-modified-tick))
+       (eq company-tern-last-buffer (current-buffer))
        (eq company-tern-last-prefix prefix)))
 
 (defun company-tern-candidates-query (prefix)
@@ -66,6 +70,7 @@ Properly detect strings, comments and attribute access."
   (setq tern-last-point-pos (point))
   (setq company-tern-modified-tick (buffer-chars-modified-tick))
   (setq company-tern-last-prefix prefix)
+  (setq company-tern-last-buffer (current-buffer))
   ;; Do tern call.
   (tern-run-query
    (lambda (data)
