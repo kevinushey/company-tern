@@ -89,11 +89,34 @@ Properly detect strings, comments and attribute access."
   ;; Skip company-tern at that time.
   nil)
 
+(defun company-tern-candidates-explicit (prefix)
+  "Retrieve completion candidates from tern synchronously."
+  (setq tern-last-point-pos (point))
+  (setq company-tern-modified-tick (buffer-chars-modified-tick))
+  (setq company-tern-last-prefix prefix)
+  (setq company-tern-last-buffer (current-buffer))
+  ;; Tern call.
+  (setq company-tern-candidates-cache 'trash-value)
+  (tern-run-query
+   (lambda (data)
+     (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
+           (start (+ 1 (cdr (assq 'start data))))
+           (end (+ 1 (cdr (assq 'end data)))))
+       (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
+       (setq company-tern-candidates-cache cs)))
+   "completions"
+   (point))
+  ;; Block Emacs until tern return some value.
+  (while (eq company-tern-candidates-cache 'trash-value)
+    (sleep-for 0.05))
+  company-tern-candidates-cache)
+
 (defun company-tern-candidates (prefix)
   "Start asynchronous tern completion with PREFIX."
-  (if (company-tern-candidates-p prefix)
-      company-tern-candidates-cache
-    (company-tern-candidates-query prefix)))
+  (cond
+   ((company-tern-candidates-p prefix) company-tern-candidates-cache)
+   ((company-explicit-action-p) (company-tern-candidates-explicit prefix))
+   (t (company-tern-candidates-query prefix))))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
