@@ -63,7 +63,7 @@ Properly detect strings, comments and attribute access."
   (and (eq tern-last-point-pos (point))
        (eq company-tern-modified-tick (buffer-chars-modified-tick))
        (eq company-tern-last-buffer (current-buffer))
-       (eq company-tern-last-prefix prefix)))
+       (string= company-tern-last-prefix prefix)))
 
 (defun company-tern-candidates-query (prefix)
   "Retrieve PREFIX completion candidates from tern."
