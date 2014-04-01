@@ -1,4 +1,4 @@
-;;; company-tern.el --- Tern backend for company-mode
+;;; company-tern.el --- Tern backend for company-mode  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2013 by Malyshev Artem
 
@@ -33,7 +33,6 @@
 
 (defun company-tern-prefix ()
   "Grab prefix at point.
-
 Properly detect strings, comments and attribute access."
   (when (not (company-in-string-or-comment))
     (let ((symbol (company-grab-symbol)))
@@ -46,87 +45,33 @@ Properly detect strings, comments and attribute access."
             symbol)
         'stop))))
 
-(defvar company-tern-candidates-cache nil
-  "Local cache stored last completions from company candidates.")
-
-(defvar company-tern-modified-tick nil
-  "Last buffer chars modified tick used for company-tern completions.")
-
-(defvar company-tern-last-prefix nil
-  "Last prefix used for company-tern completions.")
-
-(defvar company-tern-last-buffer nil
-  "Last buffer in witch company-tern was called.")
-
-(defun company-tern-candidates-p (prefix)
-  "Check if tern cache was properly populated with PREFIX."
-  (and (eq tern-last-point-pos (point))
-       (eq company-tern-modified-tick (buffer-chars-modified-tick))
-       (eq company-tern-last-buffer (current-buffer))
-       (string= company-tern-last-prefix prefix)))
-
-(defun company-tern-candidates (prefix)
-  "Tern completion with PREFIX."
-  (if (company-explicit-action-p)
-      (company-tern-candidates-explicit prefix)
-    (company-tern-candidates-query prefix)))
-
-(defun company-tern-candidates-query (prefix)
-  "Retrieve PREFIX completion candidates from tern."
+(defun company-tern-candidates-query (prefix callback)
+  "Retrieve PREFIX completion candidates from tern.
+Use CALLBACK function to display candidates."
   (setq tern-last-point-pos (point))
-  (setq company-tern-modified-tick (buffer-chars-modified-tick))
-  (setq company-tern-last-prefix prefix)
-  (setq company-tern-last-buffer (current-buffer))
-  ;; Do tern call.
   (tern-run-query
    (lambda (data)
-     (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
-           (start (+ 1 (cdr (assq 'start data))))
-           (end (+ 1 (cdr (assq 'end data)))))
-       (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
-       (setq company-tern-candidates-cache cs)))
+     (let* ((start (+ 1 (cdr (assq 'start data))))
+            (end (+ 1 (cdr (assq 'end data))))
+            (text (buffer-substring-no-properties start end))
+            (cs (loop for elt across (cdr (assq 'completions data))
+                      collect elt)))
+       (setq tern-last-completions (list text start end cs))
+       (funcall callback cs)))
    "completions"
-   (point))
-  ;; Return asynchronous callback.
-  '(:async . company-tern-candidates-fetcher))
-
-(defun company-tern-candidates-fetcher (prefix)
-  "Return PREFIX completions from cache."
-  (when (company-tern-candidates-p prefix)
-    company-tern-candidates-cache))
-
-(defun company-tern-candidates-explicit (prefix)
-  "Retrieve PREFIX completion candidates from tern synchronously."
-  (setq tern-last-point-pos (point))
-  (setq company-tern-modified-tick (buffer-chars-modified-tick))
-  (setq company-tern-last-prefix prefix)
-  (setq company-tern-last-buffer (current-buffer))
-  ;; Tern call.
-  (setq company-tern-candidates-cache 'trash-value)
-  (tern-run-query
-   (lambda (data)
-     (let ((cs (loop for elt across (cdr (assq 'completions data)) collect elt))
-           (start (+ 1 (cdr (assq 'start data))))
-           (end (+ 1 (cdr (assq 'end data)))))
-       (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
-       (setq company-tern-candidates-cache cs)))
-   "completions"
-   (point))
-  ;; Block Emacs until tern return some value.
-  (while (eq company-tern-candidates-cache 'trash-value)
-    (sleep-for 0.05))
-  company-tern-candidates-cache)
+   (point)))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
   "Tern backend for company-mode.
-
 See `company-backends' for more info about COMMAND and ARG."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-tern))
     (prefix (and tern-mode (company-tern-prefix)))
-    (candidates (company-tern-candidates arg))))
+    (candidates (cons :async
+                      (lambda (c)
+                        (company-tern-candidates-query arg c))))))
 
 (provide 'company-tern)
 
