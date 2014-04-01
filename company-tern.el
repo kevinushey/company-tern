@@ -65,6 +65,12 @@ Properly detect strings, comments and attribute access."
        (eq company-tern-last-buffer (current-buffer))
        (string= company-tern-last-prefix prefix)))
 
+(defun company-tern-candidates (prefix)
+  "Tern completion with PREFIX."
+  (if (company-explicit-action-p)
+      (company-tern-candidates-explicit prefix)
+    (company-tern-candidates-query prefix)))
+
 (defun company-tern-candidates-query (prefix)
   "Retrieve PREFIX completion candidates from tern."
   (setq tern-last-point-pos (point))
@@ -78,19 +84,19 @@ Properly detect strings, comments and attribute access."
            (start (+ 1 (cdr (assq 'start data))))
            (end (+ 1 (cdr (assq 'end data)))))
        (setq tern-last-completions (list (buffer-substring-no-properties start end) start end cs))
-       (setq company-tern-candidates-cache cs)
-       ;; Restart company completion.
-       (unless company-candidates
-         (company-pre-command)
-         (company-auto-begin)
-         (company-post-command))))
+       (setq company-tern-candidates-cache cs)))
    "completions"
    (point))
-  ;; Skip company-tern at that time.
-  nil)
+  ;; Return asynchronous callback.
+  '(:async . company-tern-candidates-fetcher))
+
+(defun company-tern-candidates-fetcher (prefix)
+  "Return PREFIX completions from cache."
+  (when (company-tern-candidates-p prefix)
+    company-tern-candidates-cache))
 
 (defun company-tern-candidates-explicit (prefix)
-  "Retrieve completion candidates from tern synchronously."
+  "Retrieve PREFIX completion candidates from tern synchronously."
   (setq tern-last-point-pos (point))
   (setq company-tern-modified-tick (buffer-chars-modified-tick))
   (setq company-tern-last-prefix prefix)
@@ -110,13 +116,6 @@ Properly detect strings, comments and attribute access."
   (while (eq company-tern-candidates-cache 'trash-value)
     (sleep-for 0.05))
   company-tern-candidates-cache)
-
-(defun company-tern-candidates (prefix)
-  "Start asynchronous tern completion with PREFIX."
-  (cond
-   ((company-tern-candidates-p prefix) company-tern-candidates-cache)
-   ((company-explicit-action-p) (company-tern-candidates-explicit prefix))
-   (t (company-tern-candidates-query prefix))))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
