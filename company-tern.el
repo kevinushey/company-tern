@@ -5,7 +5,7 @@
 ;; Author: Malyshev Artem <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/company-tern
 ;; Version: 0.0.1
-;; Package-Requires: ((company "0.6.12") (tern "0.0.1"))
+;; Package-Requires: ((company "0.8.0") (tern "0.0.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -48,15 +48,10 @@ Properly detect strings, comments and attribute access."
 (defun company-tern-candidates-query (prefix callback)
   "Retrieve PREFIX completion candidates from tern.
 Use CALLBACK function to display candidates."
-  (setq tern-last-point-pos (point))
   (tern-run-query
    (lambda (data)
-     (let* ((start (+ 1 (cdr (assq 'start data))))
-            (end (+ 1 (cdr (assq 'end data))))
-            (text (buffer-substring-no-properties start end))
-            (cs (loop for elt across (cdr (assq 'completions data))
+     (let* ((cs (loop for elt across (cdr (assq 'completions data))
                       collect elt)))
-       (setq tern-last-completions (list text start end cs))
        (funcall callback cs)))
    "completions"
    (point)))
@@ -70,8 +65,8 @@ See `company-backends' for more info about COMMAND and ARG."
     (interactive (company-begin-backend 'company-tern))
     (prefix (and tern-mode (company-tern-prefix)))
     (candidates (cons :async
-                      (lambda (c)
-                        (company-tern-candidates-query arg c))))))
+                      (lambda (callback)
+                        (company-tern-candidates-query arg callback))))))
 
 (provide 'company-tern)
 
