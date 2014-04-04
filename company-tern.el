@@ -28,22 +28,12 @@
 (require 'tern)
 (eval-when-compile (require 'cl))
 
-(defvar company-tern-complete-on-dot t
-  "If not nil, invoke tern completion after dot inserting.")
-
 (defun company-tern-prefix ()
-  "Grab prefix at point.
-Properly detect strings, comments and attribute access."
-  (when (not (company-in-string-or-comment))
-    (let ((symbol (company-grab-symbol)))
-      (if symbol
-          (if (and company-tern-complete-on-dot
-                   (save-excursion
-                     (forward-char (- (length symbol)))
-                     (looking-back "\\." (- (point) 1))))
-              (cons symbol t)
-            symbol)
-        'stop))))
+  "Grab prefix for tern."
+  (and tern-mode
+       (not (company-in-string-or-comment))
+       (or (company-grab-symbol-cons "\\." 1)
+           'stop)))
 
 (defun company-tern-candidates-query (prefix callback)
   "Retrieve PREFIX completion candidates from tern.
@@ -63,7 +53,7 @@ See `company-backends' for more info about COMMAND and ARG."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-tern))
-    (prefix (and tern-mode (company-tern-prefix)))
+    (prefix (company-tern-prefix))
     (candidates (cons :async
                       (lambda (callback)
                         (company-tern-candidates-query arg callback))))))
