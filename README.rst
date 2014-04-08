@@ -19,11 +19,11 @@ Add ``company-tern`` to allowed ``company-mode`` backends list
 
     (add-to-list 'company-backends 'company-tern)
 
-Knowing issues
---------------
+Known issues
+------------
 
-If annotations appears inline with corresponding identifiers without
-any tabulation then you must to set align option properly.
+If annotations appear inline with corresponding identifiers and sans
+any tabulation, then you need to set up the align option properly.
 
 .. code:: lisp
 
