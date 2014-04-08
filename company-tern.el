@@ -43,7 +43,8 @@ Use CALLBACK function to display candidates."
      (let* ((cs (loop for elt across (cdr (assq 'completions data))
                       collect elt)))
        (funcall callback cs)))
-   "completions"
+   '((type . "completions")
+     (includeKeywords . t))
    (point)))
 
 ;;;###autoload
