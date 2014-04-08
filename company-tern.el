@@ -40,12 +40,26 @@
 Use CALLBACK function to display candidates."
   (tern-run-query
    (lambda (data)
-     (let* ((cs (loop for elt across (cdr (assq 'completions data))
-                      collect elt)))
-       (funcall callback cs)))
+     (funcall callback
+              (mapcar (lambda (completion)
+                        (let ((candidate (cdr (assq 'name completion))))
+                          (put-text-property 0 1 'type (cdr (assq 'type completion)) candidate)
+                          (put-text-property 0 1 'doc (cdr (assq 'doc completion)) candidate)
+                          candidate))
+                      (cdr (assq 'completions data)))))
    '((type . "completions")
-     (includeKeywords . t))
+     (includeKeywords . t)
+     (types . t)
+     (docs .t))
    (point)))
+
+(defun company-tern-meta (candidate)
+  "Return short documentation string for chosen CANDIDATE."
+  (get-text-property 0 'doc candidate))
+
+(defun company-tern-annotation (candidate)
+  "Return type annotation for chosen CANDIDATE."
+  (get-text-property 0 'type candidate))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
@@ -57,7 +71,9 @@ See `company-backends' for more info about COMMAND and ARG."
     (prefix (company-tern-prefix))
     (candidates (cons :async
                       (lambda (callback)
-                        (company-tern-candidates-query arg callback))))))
+                        (company-tern-candidates-query arg callback))))
+    (annotation (company-tern-annotation arg))
+    (meta (company-tern-meta arg))))
 
 (provide 'company-tern)
 
