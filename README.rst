@@ -19,7 +19,7 @@ Add ``company-tern`` to allowed ``company-mode`` backends list
 
     (add-to-list 'company-backends 'company-tern)
 
-If you doesn't like circles after object own properties consider less
+If you don't like circles after object's own properties consider less
 annoying marker for that purpose.
 
 .. code:: lisp
