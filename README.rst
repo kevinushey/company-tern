@@ -19,6 +19,13 @@ Add ``company-tern`` to allowed ``company-mode`` backends list
 
     (add-to-list 'company-backends 'company-tern)
 
+If you doesn't like circles after object own properties consider less
+annoying marker for that purpose.
+
+.. code:: lisp
+
+    (setq company-tern-own-property-marker "")
+
 Known issues
 ------------
 
@@ -28,6 +35,12 @@ any tabulation, then you need to set up the align option properly.
 .. code:: lisp
 
     (setq company-tooltip-align-annotations t)
+
+Thanks
+------
+
+* **@katspaugh**
+* **@dgutov**
 
 .. _Tern: http://ternjs.net/
 .. _company-mode: http://company-mode.github.io/
