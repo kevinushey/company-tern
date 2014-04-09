@@ -28,6 +28,9 @@
 (require 'tern)
 (eval-when-compile (require 'cl))
 
+(defvar company-tern-own-property-marker " ○"
+  "String to indicate object own properties.")
+
 (defun company-tern-prefix ()
   "Grab prefix for tern."
   (and tern-mode
@@ -63,11 +66,15 @@ Use CALLBACK function to display candidates."
   "Sort CANDIDATES list by completion depth."
   (let (own-properties prototype-properties)
     (mapcar #'(lambda (candidate)
-                (if (eq 0 (get-text-property 0 'depth candidate))
+                (if (company-tern-own-property-p candidate)
                     (push candidate own-properties)
                   (push candidate prototype-properties)))
             (reverse candidates))
     (append own-properties prototype-properties)))
+
+(defun company-tern-own-property-p (candidate)
+  "Return t if CANDIDATE is object own property."
+  (eq 0 (get-text-property 0 'depth candidate)))
 
 (defun company-tern-meta (candidate)
   "Return short documentation string for chosen CANDIDATE."
@@ -75,7 +82,11 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-annotation (candidate)
   "Return type annotation for chosen CANDIDATE."
-  (get-text-property 0 'type candidate))
+  (concat
+   (get-text-property 0 'type candidate)
+   (if (company-tern-own-property-p candidate)
+       company-tern-own-property-marker
+     "")))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
