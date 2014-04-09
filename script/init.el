@@ -18,4 +18,6 @@
 
 (global-company-mode)
 
+(setq company-tooltip-align-annotations t)
+
 (add-to-list 'company-backends 'company-tern)

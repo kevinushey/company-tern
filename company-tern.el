@@ -35,23 +35,43 @@
        (or (company-grab-symbol-cons "\\." 1)
            'stop)))
 
+(defun company-tern-format-candidate (completion)
+  "Grab candidate with properties from COMPLETION."
+  (let ((candidate (cdr (assq 'name completion))))
+    (put-text-property 0 1 'type (cdr (assq 'type completion)) candidate)
+    (put-text-property 0 1 'doc (cdr (assq 'doc completion)) candidate)
+    (put-text-property 0 1 'depth (cdr (assq 'depth completion)) candidate)
+    candidate))
+
 (defun company-tern-candidates-query (prefix callback)
   "Retrieve PREFIX completion candidates from tern.
 Use CALLBACK function to display candidates."
   (tern-run-query
    (lambda (data)
      (funcall callback
-              (mapcar (lambda (completion)
-                        (let ((candidate (cdr (assq 'name completion))))
-                          (put-text-property 0 1 'type (cdr (assq 'type completion)) candidate)
-                          (put-text-property 0 1 'doc (cdr (assq 'doc completion)) candidate)
-                          candidate))
-                      (cdr (assq 'completions data)))))
+              (company-tern-sort-by-depth
+               (mapcar #'company-tern-format-candidate
+                       (cdr (assq 'completions data))))))
    '((type . "completions")
      (includeKeywords . t)
+     (depths . t)
      (types . t)
      (docs .t))
    (point)))
+
+(defun company-tern-sort-by-depth (candidates)
+  "Sort CANDIDATES list by completion depth."
+  (sort candidates
+        #'(lambda (one other)
+            (let ((x (get-text-property 0 'depth one))
+                  (y (get-text-property 0 'depth other)))
+              (cond
+               ((and (numberp x) (numberp y))
+                (< x y))
+               ((numberp x)
+                t)
+               ((numberp y)
+                nil))))))
 
 (defun company-tern-meta (candidate)
   "Return short documentation string for chosen CANDIDATE."
@@ -69,11 +89,12 @@ See `company-backends' for more info about COMMAND and ARG."
   (case command
     (interactive (company-begin-backend 'company-tern))
     (prefix (company-tern-prefix))
+    (annotation (company-tern-annotation arg))
+    (meta (company-tern-meta arg))
+    (sorted t)
     (candidates (cons :async
                       (lambda (callback)
-                        (company-tern-candidates-query arg callback))))
-    (annotation (company-tern-annotation arg))
-    (meta (company-tern-meta arg))))
+                        (company-tern-candidates-query arg callback))))))
 
 (provide 'company-tern)
 
