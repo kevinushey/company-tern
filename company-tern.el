@@ -61,17 +61,13 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-sort-by-depth (candidates)
   "Sort CANDIDATES list by completion depth."
-  (sort candidates
-        #'(lambda (one other)
-            (let ((x (get-text-property 0 'depth one))
-                  (y (get-text-property 0 'depth other)))
-              (cond
-               ((and (numberp x) (numberp y))
-                (< x y))
-               ((numberp x)
-                t)
-               ((numberp y)
-                nil))))))
+  (let (own-properties prototype-properties)
+    (mapcar #'(lambda (candidate)
+                (if (eq 0 (get-text-property 0 'depth candidate))
+                    (push candidate own-properties)
+                  (push candidate prototype-properties)))
+            (reverse candidates))
+    (append own-properties prototype-properties)))
 
 (defun company-tern-meta (candidate)
   "Return short documentation string for chosen CANDIDATE."
