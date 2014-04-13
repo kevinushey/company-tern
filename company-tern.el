@@ -31,6 +31,9 @@
 (defvar company-tern-own-property-marker " ○"
   "String to indicate object own properties.")
 
+(defvar company-tern-meta-as-single-line nil
+  "Trim candidate type information to length of frame width.")
+
 (defun company-tern-prefix ()
   "Grab prefix for tern."
   (and tern-mode
@@ -76,14 +79,29 @@ Use CALLBACK function to display candidates."
   "Return t if CANDIDATE is object own property."
   (eq 0 (get-text-property 0 'depth candidate)))
 
+(defun company-tern-doc (candidate)
+  "Return documentation buffer for CANDIDATE."
+  (let ((doc (get-text-property 0 'doc candidate)))
+    (and doc (company-doc-buffer doc))))
+
 (defun company-tern-meta (candidate)
   "Return short documentation string for chosen CANDIDATE."
-  (get-text-property 0 'doc candidate))
+  (let ((type (get-text-property 0 'type candidate)))
+    (if (and type company-tern-meta-as-single-line)
+        (substring type 0 (min (frame-width) (length doc)))
+      type)))
+
+(defun company-tern-get-type (candidate)
+  "Analyze CANDIDATE type."
+  (let ((type (get-text-property 0 'type candidate)))
+    (if (and type (string-prefix-p "fn(" type))
+        "fn()"
+      type)))
 
 (defun company-tern-annotation (candidate)
   "Return type annotation for chosen CANDIDATE."
   (concat
-   (get-text-property 0 'type candidate)
+   (company-tern-get-type candidate)
    (if (company-tern-own-property-p candidate)
        company-tern-own-property-marker
      "")))
@@ -98,6 +116,7 @@ See `company-backends' for more info about COMMAND and ARG."
     (prefix (company-tern-prefix))
     (annotation (company-tern-annotation arg))
     (meta (company-tern-meta arg))
+    (doc-buffer (company-tern-doc arg))
     (sorted t)
     (candidates (cons :async
                       (lambda (callback)
