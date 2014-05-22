@@ -98,6 +98,10 @@ Use CALLBACK function to display candidates."
         "fn()"
       type)))
 
+(defun company-tern-function-p (type)
+  "Return t if given TYPE is a function."
+  (string-prefix-p "fn(" type))
+
 (defun company-tern-annotation (candidate)
   "Return type annotation for chosen CANDIDATE."
   (concat

@@ -5,9 +5,13 @@
 ;;; Code:
 
 (require 'ert)
+(require 'company-tern)
 
-(ert-deftest test-t ()
-  (should t))
+(ert-deftest test-company-tern-function-p ()
+  (should (company-tern-function-p "fn(i: number)")))
+
+(ert-deftest test-company-tern-function-p-with-number ()
+  (should (null (company-tern-function-p "number"))))
 
 (provide 'company-tern-test)
 
