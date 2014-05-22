@@ -1,6 +1,10 @@
 Company tern
 ============
 
+.. image:: https://travis-ci.org/proofit404/company-tern.png
+    :target: https://travis-ci.org/proofit404/company-tern
+    :alt: Build Status
+
 Tern_ backend for company-mode_.
 
 Installation
