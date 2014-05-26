@@ -5,7 +5,7 @@
 ;; Author: Malyshev Artem <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/company-tern
 ;; Version: 0.0.1
-;; Package-Requires: ((company "0.8.0") (tern "0.0.1"))
+;; Package-Requires: ((company "0.8.0") (tern "0.0.1") (dash "2.6.0") (s "1.9.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 
 (require 'company)
 (require 'tern)
+(require 'dash)
+(require 's)
 (eval-when-compile (require 'cl))
 
 (defvar company-tern-own-property-marker " ○"
@@ -81,26 +83,15 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-doc (candidate)
   "Return documentation buffer for CANDIDATE."
-  (let ((doc (get-text-property 0 'doc candidate)))
-    (and doc (company-doc-buffer doc))))
+  (-when-let (doc (get-text-property 0 'doc candidate))
+    (company-doc-buffer doc)))
 
 (defun company-tern-meta (candidate)
   "Return short documentation string for chosen CANDIDATE."
-  (let ((type (get-text-property 0 'type candidate)))
-    (if (and type company-tern-meta-as-single-line)
-        (substring type 0 (min (frame-width) (length doc)))
+  (-when-let (type (get-text-property 0 'type candidate))
+    (if company-tern-meta-as-single-line
+        (substring type 0 (min (frame-width) (length type)))
       type)))
-
-(defun company-tern-get-type (candidate)
-  "Analyze CANDIDATE type."
-  (let ((type (get-text-property 0 'type candidate)))
-    (if (and type (string-prefix-p "fn(" type))
-        "fn()"
-      type)))
-
-(defun company-tern-function-p (type)
-  "Return t if given TYPE is a function."
-  (string-prefix-p "fn(" type))
 
 (defun company-tern-annotation (candidate)
   "Return type annotation for chosen CANDIDATE."
@@ -109,6 +100,25 @@ Use CALLBACK function to display candidates."
    (if (company-tern-own-property-p candidate)
        company-tern-own-property-marker
      "")))
+
+(defun company-tern-get-type (candidate)
+  "Analyze CANDIDATE type."
+  (-when-let (type (get-text-property 0 'type candidate))
+    (if (company-tern-function-p type)
+        (company-tern-function-type type)
+      (company-tern-variable-type type))))
+
+(defun company-tern-function-p (type)
+  "Return t if given TYPE is a function."
+  (s-starts-with? "fn(" type))
+
+(defun company-tern-function-type (type)
+  "(test, context)")
+
+(defun company-tern-variable-type (type)
+  (if company-tooltip-align-annotations
+      type
+    (concat " -> " type)))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)
