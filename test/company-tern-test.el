@@ -14,9 +14,16 @@
   (should (null (company-tern-function-p "number"))))
 
 (ert-deftest test-company-tern-function-type ()
-  (should (s-equals? "(test, context)"
-                     (company-tern-function-type
-                      "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool"))))
+  (let (company-tooltip-align-annotations)
+    (should (s-equals? (company-tern-function-type
+                        "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool")
+                       "(test, context?)"))))
+
+(ert-deftest test-company-tern-function-type-align-annotation ()
+  (let ((company-tooltip-align-annotations t))
+    (should (s-equals? (company-tern-function-type
+                        "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool")
+                       "fn(test, context?)"))))
 
 (ert-deftest test-company-tern-variable-type ()
   (let ((company-tooltip-align-annotations t))

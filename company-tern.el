@@ -113,9 +113,15 @@ Use CALLBACK function to display candidates."
   (s-starts-with? "fn(" type))
 
 (defun company-tern-function-type (type)
-  "(test, context)")
+  "Prepare function TYPE for company annotation."
+  (let* ((data (list (cons 'type type)))
+         (types (tern-parse-function-type data))
+         (args (mapconcat (lambda (arg) (car arg)) (cadr types) ", "))
+         (annot (if company-tooltip-align-annotations "fn(%s)" "(%s)")))
+    (format annot args)))
 
 (defun company-tern-variable-type (type)
+  "Prepare variable TYPE for company annotation."
   (if company-tooltip-align-annotations
       type
     (concat " -> " type)))
