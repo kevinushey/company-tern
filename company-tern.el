@@ -1,11 +1,11 @@
 ;;; company-tern.el --- Tern backend for company-mode  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013 by Malyshev Artem
+;; Copyright (C) 2013, 2014 by Malyshev Artem
 
 ;; Author: Malyshev Artem <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/company-tern
 ;; Version: 0.0.1
-;; Package-Requires: ((company "0.8.0") (tern "0.0.1") (dash "2.6.0") (s "1.9.0"))
+;; Package-Requires: ((company "0.8.0") (tern "0.0.1") (dash "2.6.0") (s "1.9.0") (cl-lib "0.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'company)
 (require 'tern)
 (require 'dash)
 (require 's)
-(eval-when-compile (require 'cl))
 
 (defvar company-tern-own-property-marker " ○"
   "String to indicate object own properties.")
@@ -64,7 +64,7 @@ Use CALLBACK function to display candidates."
      (includeKeywords . t)
      (depths . t)
      (types . t)
-     (docs .t))
+     (docs . t))
    (point)))
 
 (defun company-tern-sort-by-depth (candidates)
@@ -131,7 +131,7 @@ Use CALLBACK function to display candidates."
   "Tern backend for company-mode.
 See `company-backends' for more info about COMMAND and ARG."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-tern))
     (prefix (company-tern-prefix))
     (annotation (company-tern-annotation arg))
