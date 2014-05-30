@@ -36,11 +36,9 @@ You can trim too long function signatures to the frame width.
 
     (setq company-tern-meta-as-single-line t)
 
-Known issues
-------------
-
-If annotations appear inline with corresponding identifiers and sans
-any tabulation, then you need to set up the align option properly.
+If you doesn't like inline argument annotations appear with
+corresponding identifiers, then you can to set up the company align
+option.
 
 .. code:: lisp
 
