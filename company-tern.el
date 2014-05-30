@@ -4,7 +4,7 @@
 
 ;; Author: Malyshev Artem <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/company-tern
-;; Version: 0.0.1
+;; Version: 0.1.0
 ;; Package-Requires: ((company "0.8.0") (tern "0.0.1") (dash "2.6.0") (s "1.9.0") (cl-lib "0.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
