@@ -51,6 +51,18 @@
     (put-text-property 0 1 'depth 0 candidate)
     (should-not (company-tern-own-property-p candidate))))
 
+(ert-deftest test-company-tern-keyword-annotation ()
+  (let ((candidate "keyword")
+        (company-tooltip-align-annotations t))
+    (put-text-property 0 1 'type "?" candidate)
+    (put-text-property 0 1 'isKeyword t candidate)
+    (should (s-equals? ":keyword" (company-tern-get-type candidate)))))
+
+(ert-deftest test-company-tern-keyword-format-annotation ()
+  (let ((candidate "keyword"))
+    (put-text-property 0 1 'isKeyword t candidate)
+    (should (s-equals? " -> :keyword" (company-tern-get-type candidate)))))
+
 (provide 'company-tern-test)
 
 ;;; company-tern-test.el ends here

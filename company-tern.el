@@ -124,10 +124,22 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-get-type (candidate)
   "Analyze CANDIDATE type."
-  (-when-let (type (get-text-property 0 'type candidate))
-    (if (company-tern-function-p type)
-        (company-tern-function-type type)
-      (company-tern-variable-type type))))
+  (if (company-tern-keyword-p candidate)
+      (company-tern-format-keyword)
+    (-when-let (type (get-text-property 0 'type candidate))
+      (if (company-tern-function-p type)
+          (company-tern-function-type type)
+        (company-tern-variable-type type)))))
+
+(defun company-tern-keyword-p (candidate)
+  "True if CANDIDATE is a keyword."
+  (get-text-property 0 'isKeyword candidate))
+
+(defun company-tern-format-keyword ()
+  "Format keyword according to `company-tooltip-align-annotations'."
+  (if company-tooltip-align-annotations
+      ":keyword"
+    " -> :keyword"))
 
 (defun company-tern-function-p (type)
   "Return t if given TYPE is a function."
