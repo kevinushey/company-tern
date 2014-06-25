@@ -33,6 +33,24 @@
   (let (company-tooltip-align-annotations)
     (should (s-equals? " -> number" (company-tern-variable-type "number")))))
 
+(ert-deftest test-company-tern-property-marker-allow-own-properties ()
+  (let ((candidate "property"))
+    (put-text-property 0 1 'isProperty t candidate)
+    (put-text-property 0 1 'depth 0 candidate)
+    (should (company-tern-own-property-p candidate))))
+
+(ert-deftest test-company-tern-property-marker-abort-prototype-properties ()
+  (let ((candidate "property"))
+    (put-text-property 0 1 'isProperty t candidate)
+    (put-text-property 0 1 'depth 1 candidate)
+    (should-not (company-tern-own-property-p candidate))))
+
+(ert-deftest test-company-tern-property-marker-ignore-keyword ()
+  (let ((candidate "keyword"))
+    (put-text-property 0 1 'isKeyword t candidate)
+    (put-text-property 0 1 'depth 0 candidate)
+    (should-not (company-tern-own-property-p candidate))))
+
 (provide 'company-tern-test)
 
 ;;; company-tern-test.el ends here

@@ -98,7 +98,9 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-own-property-p (candidate)
   "Return t if CANDIDATE is object own property."
-  (eq 0 (get-text-property 0 'depth candidate)))
+  (and (get-text-property 0 'isProperty candidate)
+       (not (get-text-property 0 'isKeyword candidate))
+       (eq 0 (get-text-property 0 'depth candidate))))
 
 (defun company-tern-doc (candidate)
   "Return documentation buffer for CANDIDATE."
