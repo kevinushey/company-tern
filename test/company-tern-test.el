@@ -63,6 +63,16 @@
     (put-text-property 0 1 'isKeyword t candidate)
     (should (s-equals? " -> :keyword" (company-tern-get-type candidate)))))
 
+(ert-deftest test-company-tern-format-candidates ()
+  (let ((candidate (car (company-tern-format-candidates
+                         '((completions . [((isKeyword . t) (depth . 0) (name . "var"))])
+                           (isProperty . nil)
+                           (end . 1)
+                           (start . 0))))))
+    (should (s-equals? candidate "var"))
+    (should (get-text-property 0 'isKeyword candidate))
+    (should-not (get-text-property 0 'isProperty candidate))))
+
 (provide 'company-tern-test)
 
 ;;; company-tern-test.el ends here

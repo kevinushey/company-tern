@@ -62,13 +62,17 @@
        (or (company-grab-symbol-cons "\\." 1)
            'stop)))
 
-(defun company-tern-format-candidate (completion)
-  "Grab candidate with properties from COMPLETION."
-  (let ((candidate (cdr (assq 'name completion))))
-    (put-text-property 0 1 'type (cdr (assq 'type completion)) candidate)
-    (put-text-property 0 1 'doc (cdr (assq 'doc completion)) candidate)
-    (put-text-property 0 1 'depth (cdr (assq 'depth completion)) candidate)
-    candidate))
+(defun company-tern-format-candidates (data)
+  "Grab candidates with properties from tern DATA."
+  (let ((completions (cdr (assq 'completions data)))
+        (property-p (assq 'isProperty data)))
+    (mapcar
+     (lambda (completion)
+       (let ((candidate (cdr (assq 'name completion))))
+         (dolist (prop (push property-p completion))
+           (put-text-property 0 1 (car prop) (cdr prop) candidate))
+         candidate))
+     completions)))
 
 (defun company-tern-candidates-query (prefix callback)
   "Retrieve PREFIX completion candidates from tern.
@@ -77,8 +81,7 @@ Use CALLBACK function to display candidates."
    (lambda (data)
      (funcall callback
               (company-tern-sort-by-depth
-               (mapcar #'company-tern-format-candidate
-                       (cdr (assq 'completions data))))))
+               (company-tern-format-candidates data))))
    '((type . "completions")
      (includeKeywords . t)
      (depths . t)
