@@ -105,23 +105,24 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-keyword-p (candidate)
   "Return t if CANDIDATE is a keyword."
-  (null (eq json-false (get-text-property 0 'isKeyword candidate))))
+  (get-text-property 0 'isKeyword candidate))
 
-(defun company-tern-function-p (type)
-  "Return t if given TYPE is a function."
-  (s-starts-with? "fn(" type))
+(defun company-tern-function-p (candidate)
+  "Return t if CANDIDATE is a function."
+  (--when-let (get-text-property 0 'type candidate)
+    (s-starts-with? "fn(" it)))
 
 (defun company-tern-doc (candidate)
   "Return documentation buffer for CANDIDATE."
-  (-when-let (doc (get-text-property 0 'doc candidate))
-    (company-doc-buffer doc)))
+  (--when-let (get-text-property 0 'doc candidate)
+    (company-doc-buffer it)))
 
 (defun company-tern-meta (candidate)
   "Return short documentation string for chosen CANDIDATE."
-  (-when-let (type (get-text-property 0 'type candidate))
+  (--when-let (get-text-property 0 'type candidate)
     (if company-tern-meta-as-single-line
-        (substring type 0 (min (frame-width) (length type)))
-      type)))
+        (s-left (frame-width) it)
+      it)))
 
 (defun company-tern-annotation (candidate)
   "Return type annotation for chosen CANDIDATE."
@@ -133,32 +134,28 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-get-type (candidate)
   "Analyze CANDIDATE type."
-  (if (company-tern-keyword-p candidate)
-      (company-tern-format-keyword)
-    (-when-let (type (get-text-property 0 'type candidate))
-      (if (company-tern-function-p type)
-          (company-tern-function-type type)
-        (company-tern-variable-type type)))))
+  (unless (company-tern-keyword-p candidate)
+    (if (company-tern-function-p candidate)
+        (company-tern-function-type candidate)
+      (company-tern-variable-type candidate))))
 
-(defun company-tern-format-keyword ()
-  "Format keyword according to `company-tooltip-align-annotations'."
-  (if company-tooltip-align-annotations
-      ":keyword"
-    " -> :keyword"))
+(defun company-tern-function-type (candidate)
+  "Get CANDIDATE type as a function."
+  (-when-let* ((type (get-text-property 0 'type candidate))
+               (annot (if company-tooltip-align-annotations "fn(%s)" "(%s)")))
+    (->> (list (cons 'type type))
+      (tern-parse-function-type)
+      (cadr)
+      (--map (car it))
+      (-interpose ", ")
+      (apply 'concat)
+      (format annot))))
 
-(defun company-tern-function-type (type)
-  "Prepare function TYPE for company annotation."
-  (let* ((data (list (cons 'type type)))
-         (types (tern-parse-function-type data))
-         (args (mapconcat (lambda (arg) (car arg)) (cadr types) ", "))
-         (annot (if company-tooltip-align-annotations "fn(%s)" "(%s)")))
-    (format annot args)))
-
-(defun company-tern-variable-type (type)
-  "Prepare variable TYPE for company annotation."
-  (if company-tooltip-align-annotations
-      type
-    (concat " -> " type)))
+(defun company-tern-variable-type (candidate)
+  "Get CANDIDATE type as a variable."
+  (-when-let* ((type (get-text-property 0 'type candidate))
+               (annot (if company-tooltip-align-annotations "%s" " -> %s")))
+    (format annot type)))
 
 ;;;###autoload
 (defun company-tern (command &optional arg)

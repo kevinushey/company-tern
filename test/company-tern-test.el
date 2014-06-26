@@ -7,35 +7,56 @@
 (require 'ert)
 (require 'company-tern)
 
-;;; Align functions and variables.
+;;; Annotations.
 
-(ert-deftest test-company-tern-function-p ()
-  (should (company-tern-function-p "fn(i: number)")))
-
-(ert-deftest test-company-tern-function-p-with-number ()
-  (should (null (company-tern-function-p "number"))))
+;;; Types.
 
 (ert-deftest test-company-tern-function-type ()
-  (let (company-tooltip-align-annotations)
-    (should (s-equals? (company-tern-function-type
-                        "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool")
+  (let ((candidate "function")
+        (type "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool")
+        company-tooltip-align-annotations)
+    (put-text-property 0 1 'type type candidate)
+    (should (s-equals? (company-tern-get-type candidate)
                        "(test, context?)"))))
 
-(ert-deftest test-company-tern-function-type-align-annotation ()
-  (let ((company-tooltip-align-annotations t))
-    (should (s-equals? (company-tern-function-type
-                        "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool")
+(ert-deftest test-company-tern-function-align-type ()
+  (let ((candidate "function")
+        (type "fn(test: fn(elt: ?, i: number) -> bool, context?: ?) -> bool")
+        (company-tooltip-align-annotations t))
+    (put-text-property 0 1 'type type candidate)
+    (should (s-equals? (company-tern-get-type candidate)
                        "fn(test, context?)"))))
 
 (ert-deftest test-company-tern-variable-type ()
-  (let ((company-tooltip-align-annotations t))
-    (should (s-equals? "number" (company-tern-variable-type "number")))))
+  (let ((candidate "variable")
+        company-tooltip-align-annotations)
+    (put-text-property 0 1 'type "?" candidate)
+    (should (s-equals? " -> ?" (company-tern-get-type candidate)))))
 
-(ert-deftest test-company-tern-variable-type-align-annotation ()
-  (let (company-tooltip-align-annotations)
-    (should (s-equals? " -> number" (company-tern-variable-type "number")))))
+(ert-deftest test-company-tern-variable-align-type ()
+  (let ((candidate "variable")
+        (company-tooltip-align-annotations t))
+    (put-text-property 0 1 'type "?" candidate)
+    (should (s-equals? "?" (company-tern-get-type candidate)))))
 
-;;; Properties marker.
+(ert-deftest test-company-tern-keyword-type ()
+  (let ((candidate "keyword"))
+    (put-text-property 0 1 'isKeyword t candidate)
+    (should-not (company-tern-get-type candidate))))
+
+;;; Functions.
+
+(ert-deftest test-company-tern-function-p ()
+  (let ((candidate "function"))
+    (put-text-property 0 1 'type "fn()" candidate)
+    (should (company-tern-function-p candidate))))
+
+(ert-deftest test-company-tern-not-a-function-p ()
+  (let ((candidate "unknown"))
+    (put-text-property 0 1 'type "?" candidate)
+    (should-not (company-tern-function-p candidate))))
+
+;;; Properties.
 
 (ert-deftest test-company-tern-property-p ()
   (let ((candidate "property"))
@@ -56,7 +77,6 @@
 
 (ert-deftest test-company-tern-not-a-keyword ()
   (let ((candidate "variable"))
-    (put-text-property 0 1 'isKeyword json-false candidate)
     (should-not (company-tern-keyword-p candidate))))
 
 ;;; Process candidates.
