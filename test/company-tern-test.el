@@ -12,12 +12,14 @@
 (ert-deftest test-company-tern-mark-property ()
   (let ((candidate "property"))
     (put-text-property 0 1 'isProperty t candidate)
+    (put-text-property 0 1 'depth 0 candidate)
     (should (s-ends-with-p company-tern-property-marker
                            (company-tern-annotation candidate)))))
 
 (ert-deftest test-company-tern-mark-not-a-property ()
   (let ((candidate "other"))
     (put-text-property 0 1 'isProperty json-false candidate)
+    (put-text-property 0 1 'depth 0 candidate)
     (should-not (s-ends-with-p company-tern-property-marker
                                (company-tern-annotation candidate)))))
 
@@ -73,6 +75,7 @@
 (ert-deftest test-company-tern-property-p ()
   (let ((candidate "property"))
     (put-text-property 0 1 'isProperty t candidate)
+    (put-text-property 0 1 'depth 0 candidate)
     (should (company-tern-property-p candidate))))
 
 (ert-deftest test-company-tern-not-a-property-p ()

@@ -100,7 +100,8 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-property-p (candidate)
   "Return t if CANDIDATE is object own property."
-  (null (eq json-false (get-text-property 0 'isProperty candidate))))
+  (and (null (eq json-false (get-text-property 0 'isProperty candidate)))
+       (eq 0 (company-tern-depth candidate))))
 
 (defun company-tern-keyword-p (candidate)
   "Return t if CANDIDATE is a keyword."
