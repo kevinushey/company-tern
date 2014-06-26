@@ -9,6 +9,18 @@
 
 ;;; Annotations.
 
+(ert-deftest test-company-tern-mark-property ()
+  (let ((candidate "property"))
+    (put-text-property 0 1 'isProperty t candidate)
+    (should (s-ends-with-p company-tern-property-marker
+                           (company-tern-annotation candidate)))))
+
+(ert-deftest test-company-tern-mark-not-a-property ()
+  (let ((candidate "other"))
+    (put-text-property 0 1 'isProperty json-false candidate)
+    (should-not (s-ends-with-p company-tern-property-marker
+                               (company-tern-annotation candidate)))))
+
 ;;; Types.
 
 (ert-deftest test-company-tern-function-type ()

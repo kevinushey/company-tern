@@ -28,7 +28,7 @@ annoying marker for that purpose.
 
 .. code:: lisp
 
-    (setq company-tern-own-property-marker "")
+    (setq company-tern-property-marker "")
 
 You can trim too long function signatures to the frame width.
 

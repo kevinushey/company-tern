@@ -29,7 +29,7 @@
 ;; If you don't like circles after object's own properties consider less
 ;; annoying marker for that purpose.
 ;;
-;;     (setq company-tern-own-property-marker "")
+;;     (setq company-tern-property-marker "")
 ;;
 ;; You can trim too long function signatures to the frame width.
 ;;
@@ -50,7 +50,7 @@
 (require 'dash-functional)
 (require 's)
 
-(defvar company-tern-own-property-marker " ○"
+(defvar company-tern-property-marker " ○"
   "String to indicate object own properties.")
 
 (defvar company-tern-meta-as-single-line nil
@@ -127,8 +127,8 @@ Use CALLBACK function to display candidates."
   "Return type annotation for chosen CANDIDATE."
   (concat
    (company-tern-get-type candidate)
-   (if (company-tern-own-property-p candidate)
-       company-tern-own-property-marker
+   (if (company-tern-property-p candidate)
+       company-tern-property-marker
      "")))
 
 (defun company-tern-get-type (candidate)
