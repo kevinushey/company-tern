@@ -62,18 +62,6 @@
        (or (company-grab-symbol-cons "\\." 1)
            'stop)))
 
-(defun company-tern-format-candidates (data)
-  "Grab candidates with properties from tern DATA."
-  (let ((completions (cdr (assq 'completions data)))
-        (property-p (assq 'isProperty data)))
-    (mapcar
-     (lambda (completion)
-       (let ((candidate (cdr (assq 'name completion))))
-         (dolist (prop (push property-p completion))
-           (put-text-property 0 1 (car prop) (cdr prop) candidate))
-         candidate))
-     completions)))
-
 (defun company-tern-candidates-query (prefix callback)
   "Retrieve PREFIX completion candidates from tern.
 Use CALLBACK function to display candidates."
@@ -89,21 +77,31 @@ Use CALLBACK function to display candidates."
      (docs . t))
    (point)))
 
+(defun company-tern-format-candidates (data)
+  "Grab candidates with properties from tern DATA."
+  (let ((completions (cdr (assq 'completions data)))
+        (property-p (assq 'isProperty data)))
+    (mapcar
+     (lambda (completion)
+       (let ((candidate (cdr (assq 'name completion))))
+         (dolist (prop (push property-p completion))
+           (put-text-property 0 1 (car prop) (cdr prop) candidate))
+         candidate))
+     completions)))
+
 (defun company-tern-sort-by-depth (candidates)
   "Sort CANDIDATES list by completion depth."
   (let (own-properties prototype-properties)
-    (mapcar #'(lambda (candidate)
-                (if (company-tern-own-property-p candidate)
-                    (push candidate own-properties)
-                  (push candidate prototype-properties)))
-            (reverse candidates))
+    (mapc #'(lambda (candidate)
+              (if (company-tern-own-property-p candidate)
+                  (push candidate own-properties)
+                (push candidate prototype-properties)))
+          (reverse candidates))
     (append own-properties prototype-properties)))
 
-(defun company-tern-own-property-p (candidate)
+(defun company-tern-property-p (candidate)
   "Return t if CANDIDATE is object own property."
-  (and (get-text-property 0 'isProperty candidate)
-       (not (get-text-property 0 'isKeyword candidate))
-       (eq 0 (get-text-property 0 'depth candidate))))
+  (null (eq json-false (get-text-property 0 'isProperty candidate))))
 
 (defun company-tern-doc (candidate)
   "Return documentation buffer for CANDIDATE."

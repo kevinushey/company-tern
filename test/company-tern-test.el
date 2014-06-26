@@ -7,6 +7,8 @@
 (require 'ert)
 (require 'company-tern)
 
+;;; Align functions and variables.
+
 (ert-deftest test-company-tern-function-p ()
   (should (company-tern-function-p "fn(i: number)")))
 
@@ -33,23 +35,19 @@
   (let (company-tooltip-align-annotations)
     (should (s-equals? " -> number" (company-tern-variable-type "number")))))
 
-(ert-deftest test-company-tern-property-marker-allow-own-properties ()
+;;; Properties marker.
+
+(ert-deftest test-company-tern-property-p ()
   (let ((candidate "property"))
     (put-text-property 0 1 'isProperty t candidate)
-    (put-text-property 0 1 'depth 0 candidate)
-    (should (company-tern-own-property-p candidate))))
+    (should (company-tern-property-p candidate))))
 
-(ert-deftest test-company-tern-property-marker-abort-prototype-properties ()
-  (let ((candidate "property"))
-    (put-text-property 0 1 'isProperty t candidate)
-    (put-text-property 0 1 'depth 1 candidate)
-    (should-not (company-tern-own-property-p candidate))))
+(ert-deftest test-company-tern-not-a-property-p ()
+  (let ((candidate "other"))
+    (put-text-property 0 1 'isProperty json-false candidate)
+    (should-not (company-tern-property-p candidate))))
 
-(ert-deftest test-company-tern-property-marker-ignore-keyword ()
-  (let ((candidate "keyword"))
-    (put-text-property 0 1 'isKeyword t candidate)
-    (put-text-property 0 1 'depth 0 candidate)
-    (should-not (company-tern-own-property-p candidate))))
+;;; Keywords.
 
 (ert-deftest test-company-tern-keyword-annotation ()
   (let ((candidate "keyword")
@@ -63,6 +61,8 @@
     (put-text-property 0 1 'isKeyword t candidate)
     (should (s-equals? " -> :keyword" (company-tern-get-type candidate)))))
 
+;;; Process candidates.
+
 (ert-deftest test-company-tern-format-candidates ()
   (let ((candidate (car (company-tern-format-candidates
                          '((completions . [((isKeyword . t) (depth . 0) (name . "var"))])
@@ -72,6 +72,8 @@
     (should (s-equals? candidate "var"))
     (should (get-text-property 0 'isKeyword candidate))
     (should-not (get-text-property 0 'isProperty candidate))))
+
+;;; Sort by depth.
 
 (provide 'company-tern-test)
 
