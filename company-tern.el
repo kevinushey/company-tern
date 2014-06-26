@@ -103,6 +103,14 @@ Use CALLBACK function to display candidates."
   "Return t if CANDIDATE is object own property."
   (null (eq json-false (get-text-property 0 'isProperty candidate))))
 
+(defun company-tern-keyword-p (candidate)
+  "Return t if CANDIDATE is a keyword."
+  (null (eq json-false (get-text-property 0 'isKeyword candidate))))
+
+(defun company-tern-function-p (type)
+  "Return t if given TYPE is a function."
+  (s-starts-with? "fn(" type))
+
 (defun company-tern-doc (candidate)
   "Return documentation buffer for CANDIDATE."
   (-when-let (doc (get-text-property 0 'doc candidate))
@@ -132,19 +140,11 @@ Use CALLBACK function to display candidates."
           (company-tern-function-type type)
         (company-tern-variable-type type)))))
 
-(defun company-tern-keyword-p (candidate)
-  "True if CANDIDATE is a keyword."
-  (get-text-property 0 'isKeyword candidate))
-
 (defun company-tern-format-keyword ()
   "Format keyword according to `company-tooltip-align-annotations'."
   (if company-tooltip-align-annotations
       ":keyword"
     " -> :keyword"))
-
-(defun company-tern-function-p (type)
-  "Return t if given TYPE is a function."
-  (s-starts-with? "fn(" type))
 
 (defun company-tern-function-type (type)
   "Prepare function TYPE for company annotation."

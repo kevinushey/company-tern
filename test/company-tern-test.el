@@ -49,17 +49,15 @@
 
 ;;; Keywords.
 
-(ert-deftest test-company-tern-keyword-annotation ()
-  (let ((candidate "keyword")
-        (company-tooltip-align-annotations t))
-    (put-text-property 0 1 'type "?" candidate)
-    (put-text-property 0 1 'isKeyword t candidate)
-    (should (s-equals? ":keyword" (company-tern-get-type candidate)))))
-
-(ert-deftest test-company-tern-keyword-format-annotation ()
+(ert-deftest test-company-tern-keyword-p ()
   (let ((candidate "keyword"))
     (put-text-property 0 1 'isKeyword t candidate)
-    (should (s-equals? " -> :keyword" (company-tern-get-type candidate)))))
+    (should (company-tern-keyword-p candidate))))
+
+(ert-deftest test-company-tern-not-a-keyword ()
+  (let ((candidate "variable"))
+    (put-text-property 0 1 'isKeyword json-false candidate)
+    (should-not (company-tern-keyword-p candidate))))
 
 ;;; Process candidates.
 
