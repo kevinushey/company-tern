@@ -93,6 +93,15 @@
 
 ;;; Sort by depth.
 
+(ert-deftest test-company-tern-sort-by-depth ()
+  (let* ((data '(("aaa" . 2) ("bbb" . 0) ("ccc" . 1)))
+         (candidates (--map (progn
+                              (put-text-property 0 1 'depth (cdr it) (car it))
+                              (car it))
+                            data)))
+    (should (equal (company-tern-sort-by-depth candidates)
+                   '("bbb" "ccc" "aaa")))))
+
 (provide 'company-tern-test)
 
 ;;; company-tern-test.el ends here

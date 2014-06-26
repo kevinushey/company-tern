@@ -5,7 +5,7 @@
 ;; Author: Malyshev Artem <proofit404@gmail.com>
 ;; URL: https://github.com/proofit404/company-tern
 ;; Version: 0.1.0
-;; Package-Requires: ((company "0.8.0") (tern "0.0.1") (dash "2.6.0") (s "1.9.0") (cl-lib "0.5.0"))
+;; Package-Requires: ((company "0.8.0") (tern "0.0.1") (dash "2.8.0") (dash-functional "2.8.0") (s "1.9.0") (cl-lib "0.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
 (require 'company)
 (require 'tern)
 (require 'dash)
+(require 'dash-functional)
 (require 's)
 
 (defvar company-tern-own-property-marker " ○"
@@ -91,13 +92,11 @@ Use CALLBACK function to display candidates."
 
 (defun company-tern-sort-by-depth (candidates)
   "Sort CANDIDATES list by completion depth."
-  (let (own-properties prototype-properties)
-    (mapc #'(lambda (candidate)
-              (if (company-tern-own-property-p candidate)
-                  (push candidate own-properties)
-                (push candidate prototype-properties)))
-          (reverse candidates))
-    (append own-properties prototype-properties)))
+  (-sort (-on '< 'company-tern-depth) candidates))
+
+(defun company-tern-depth (candidate)
+  "Return depth attribute for CANDIDATE."
+  (get-text-property 0 'depth candidate))
 
 (defun company-tern-property-p (candidate)
   "Return t if CANDIDATE is object own property."
