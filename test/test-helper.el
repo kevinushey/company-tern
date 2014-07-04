@@ -1,4 +1,4 @@
-;;; test-helper --- ert-runner test helper
+;;; test-helper.el --- ert-runner test helper
 
 ;;; Commentary:
 

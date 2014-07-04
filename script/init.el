@@ -1,4 +1,4 @@
-;;; init --- configuration file
+;;; init.el --- minimal company-tern configuration
 
 ;;; Commentary:
 
@@ -21,3 +21,7 @@
 (setq company-tooltip-align-annotations t)
 
 (add-to-list 'company-backends 'company-tern)
+
+(provide 'init)
+
+;;; init.el ends here

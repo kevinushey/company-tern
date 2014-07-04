@@ -1,4 +1,4 @@
-;;; relative-buffers-test.el --- relative-buffers test suite
+;;; company-tern-test.el --- company-tern test suite
 
 ;;; Commentary:
 
