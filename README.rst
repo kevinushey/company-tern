@@ -1,9 +1,24 @@
+.. |travis| image:: https://travis-ci.org/proofit404/company-tern.png
+    :target: https://travis-ci.org/proofit404/company-tern
+    :alt: Build Status
+
+.. |coveralls| image:: https://coveralls.io/repos/proofit404/company-tern/badge.png
+    :target: https://coveralls.io/r/proofit404/company-tern
+    :alt: Coverage Status
+
+.. |melpa| image:: http://melpa.org/packages/company-tern-badge.svg
+    :target: http://melpa.org/#/company-tern
+    :alt: Melpa
+
+.. |melpa-stable| image:: http://stable.melpa.org/packages/company-tern-badge.svg
+    :target: http://stable.melpa.org/#/company-tern
+    :alt: Melpa Stable
+
+============
 Company tern
 ============
 
-.. image:: https://travis-ci.org/proofit404/company-tern.png
-    :target: https://travis-ci.org/proofit404/company-tern
-    :alt: Build Status
+|travis| |coveralls| |melpa| |melpa-stable|
 
 Tern_ backend for company-mode_.
 
