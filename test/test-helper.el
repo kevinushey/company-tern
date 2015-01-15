@@ -10,8 +10,6 @@
   (cask-initialize source-directory)
   (add-to-list 'load-path source-directory))
 
-(require 'undercover)
-
 (undercover "*.el")
 
 (provide 'test-helper)
