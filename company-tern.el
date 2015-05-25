@@ -151,6 +151,7 @@ See `company-backends' for more info about COMMAND and ARG."
     (annotation (company-tern-annotation arg))
     (meta (company-tern-meta arg))
     (doc-buffer (company-tern-doc arg))
+    (ignore-case t)
     (sorted t)
     (candidates (cons :async
                       (lambda (callback)
