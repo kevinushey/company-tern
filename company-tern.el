@@ -78,8 +78,9 @@ Use CALLBACK function to display candidates."
   (-sort (-on '< 'company-tern-depth) candidates))
 
 (defun company-tern-depth (candidate)
-  "Return depth attribute for CANDIDATE."
-  (get-text-property 0 'depth candidate))
+  "Return depth attribute for CANDIDATE. 'nil' entries are treated as 0."
+  (let ((depth (get-text-property 0 'depth candidate)))
+    (if (eq depth nil) 0 depth)))
 
 (defun company-tern-property-p (candidate)
   "Return t if CANDIDATE is object own property."
