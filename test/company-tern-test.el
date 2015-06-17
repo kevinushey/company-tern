@@ -117,6 +117,16 @@
     (should (equal (company-tern-sort-by-depth candidates)
                    '("bbb" "ccc" "aaa")))))
 
+;;; Allow 'nil' depths.
+(ert-deftest test-company-tern-sort-by-depth-nil ()
+  (let* ((data '(("aaa" . 2) ("bbb" . nil) ("ccc" . 1)))
+         (candidates (--map (progn
+                              (put-text-property 0 1 'depth (cdr it) (car it))
+                              (car it))
+                            data)))
+    (should (equal (company-tern-sort-by-depth candidates)
+                   '("bbb" "ccc" "aaa")))))
+
 (provide 'company-tern-test)
 
 ;;; company-tern-test.el ends here
